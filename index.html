@@ -1,4 +1,4 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="es">
   <head>
     <meta charset="UTF-8" />
@@ -90,6 +90,7 @@
       button:hover {
         opacity: 0.9;
       }
+
       button:disabled {
         opacity: 0.6;
         cursor: not-allowed;
@@ -108,6 +109,7 @@
         background: #d4edda;
         color: #27ae60;
       }
+
       .message.error {
         background: #fadbd8;
         color: #c0392b;
@@ -116,6 +118,7 @@
       .success-state {
         display: none;
       }
+
       .success-state .icon {
         font-size: 48px;
         margin-bottom: 16px;
@@ -139,8 +142,7 @@
           placeholder="Confirmar contraseña"
         />
         <div class="hint">
-          Mínimo 8 caracteres, una mayúscula, un número y un carácter especial
-          (!@#$%^&*)
+          Mínimo 8 caracteres, una mayúscula, un número y un carácter especial.
         </div>
 
         <button id="btn" onclick="handleReset()">Actualizar contraseña</button>
@@ -161,14 +163,34 @@
       const SUPABASE_URL = "https://moutwozdogxbntanciwa.supabase.co";
       const SUPABASE_ANON_KEY =
         "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1vdXR3b3pkb2d4Ym50YW5jaXdhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY5MDM5MTksImV4cCI6MjA5MjQ3OTkxOX0.z82HSBw_vyIjLQHlAiQfE6ompcTkaaEtOSOhvc8BpTc";
+
       const { createClient } = supabase;
       const client = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+      // Detectar estado de la sesión de recuperación
+      client.auth.onAuthStateChange((event, session) => {
+        if (event === "PASSWORD_RECOVERY" || session) {
+          console.log("Sesión lista para actualizar contraseña");
+        }
+      });
+
+      // Verificar si hay sesión válida al cargar
+      window.addEventListener("DOMContentLoaded", async () => {
+        const { data: { session } } = await client.auth.getSession();
+        if (!session) {
+          showMessage(
+            "El enlace es inválido o ha expirado. Por favor, solicitá un nuevo correo.",
+            "error"
+          );
+          document.getElementById("btn").disabled = true;
+        }
+      });
 
       function validatePassword(password) {
         if (password.length < 8) return "Mínimo 8 caracteres";
         if (!/[A-Z]/.test(password)) return "Debe tener al menos una mayúscula";
         if (!/[0-9]/.test(password)) return "Debe tener al menos un número";
-        if (!/[!@#$%^&*]/.test(password))
+        if (!/[^a-zA-Z0-9]/.test(password))
           return "Debe tener al menos un carácter especial";
         return null;
       }
@@ -210,7 +232,7 @@
         if (updateError) {
           showMessage(
             "No se pudo actualizar la contraseña. El link puede haber expirado.",
-            "error",
+            "error"
           );
           btn.disabled = false;
           btn.textContent = "Actualizar contraseña";
