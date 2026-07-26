@@ -1,254 +1,177 @@
 <!DOCTYPE html>
 <html lang="es">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Niru — Recuperar contraseña</title>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <style>
-      * {
-        margin: 0;
-        padding: 0;
-        box-sizing: border-box;
-      }
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Niru — Recuperar contraseña</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
 
-      body {
-        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-        background: #ffffff;
-        min-height: 100vh;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        padding: 24px;
-      }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #ffffff;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
 
-      .container {
-        width: 100%;
-        max-width: 400px;
-        text-align: center;
-      }
+    .container {
+      width: 100%;
+      max-width: 400px;
+      text-align: center;
+    }
 
-      .brand {
-        font-size: 52px;
-        font-weight: 700;
-        font-style: italic;
-        color: #c0392b;
-        margin-bottom: 32px;
-      }
+    .brand {
+      font-size: 52px;
+      font-weight: 700;
+      font-style: italic;
+      color: #C0392B;
+      margin-bottom: 32px;
+    }
 
-      .title {
-        font-size: 22px;
-        font-weight: 700;
-        color: #1a1a1a;
-        margin-bottom: 8px;
-      }
+    .title {
+      font-size: 22px;
+      font-weight: 700;
+      color: #1A1A1A;
+      margin-bottom: 8px;
+    }
 
-      .subtitle {
-        font-size: 14px;
-        color: #888888;
-        margin-bottom: 32px;
-        line-height: 1.6;
-      }
+    .subtitle {
+      font-size: 14px;
+      color: #888888;
+      margin-bottom: 32px;
+      line-height: 1.6;
+    }
 
-      input {
-        width: 100%;
-        border: 1px solid #e0e0e0;
-        border-radius: 12px;
-        padding: 14px 16px;
-        font-size: 15px;
-        color: #1a1a1a;
-        margin-bottom: 12px;
-        outline: none;
-        transition: border-color 0.2s;
-      }
+    input {
+      width: 100%;
+      border: 1px solid #E0E0E0;
+      border-radius: 12px;
+      padding: 14px 16px;
+      font-size: 15px;
+      color: #1A1A1A;
+      margin-bottom: 12px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
 
-      input:focus {
-        border-color: #c0392b;
-      }
+    input:focus { border-color: #C0392B; }
 
-      .hint {
-        font-size: 12px;
-        color: #888;
-        text-align: left;
-        margin-bottom: 20px;
-        line-height: 1.5;
-      }
+    .hint {
+      font-size: 12px;
+      color: #888;
+      text-align: left;
+      margin-bottom: 20px;
+      line-height: 1.5;
+    }
 
-      button {
-        width: 100%;
-        background: #c0392b;
-        color: white;
-        border: none;
-        border-radius: 999px;
-        padding: 14px;
-        font-size: 16px;
-        font-weight: 700;
-        cursor: pointer;
-        transition: opacity 0.2s;
-      }
+    button {
+      width: 100%;
+      background: #C0392B;
+      color: white;
+      border: none;
+      border-radius: 999px;
+      padding: 14px;
+      font-size: 16px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: opacity 0.2s;
+    }
 
-      button:hover {
-        opacity: 0.9;
-      }
+    button:hover { opacity: 0.9; }
+    button:disabled { opacity: 0.6; cursor: not-allowed; }
 
-      button:disabled {
-        opacity: 0.6;
-        cursor: not-allowed;
-      }
+    .message {
+      margin-top: 16px;
+      padding: 12px 16px;
+      border-radius: 12px;
+      font-size: 14px;
+      font-weight: 600;
+      display: none;
+    }
 
-      .message {
-        margin-top: 16px;
-        padding: 12px 16px;
-        border-radius: 12px;
-        font-size: 14px;
-        font-weight: 600;
-        display: none;
-      }
+    .message.success { background: #d4edda; color: #27AE60; }
+    .message.error { background: #FADBD8; color: #C0392B; }
 
-      .message.success {
-        background: #d4edda;
-        color: #27ae60;
-      }
+    .success-state { display: none; }
+    .success-state .icon { font-size: 48px; margin-bottom: 16px; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="brand">Niru</div>
 
-      .message.error {
-        background: #fadbd8;
-        color: #c0392b;
-      }
+    <div id="form-state">
+      <div class="title">Nueva contraseña</div>
+      <div class="subtitle">Ingresá tu nueva contraseña para recuperar el acceso a tu cuenta.</div>
 
-      .success-state {
-        display: none;
-      }
-
-      .success-state .icon {
-        font-size: 48px;
-        margin-bottom: 16px;
-      }
-    </style>
-  </head>
-  <body>
-    <div class="container">
-      <div class="brand">Niru</div>
-
-      <div id="form-state">
-        <div class="title">Nueva contraseña</div>
-        <div class="subtitle">
-          Ingresá tu nueva contraseña para recuperar el acceso a tu cuenta.
-        </div>
-
-        <input type="password" id="password" placeholder="Nueva contraseña" />
-        <input
-          type="password"
-          id="confirm"
-          placeholder="Confirmar contraseña"
-        />
-        <div class="hint">
-          Mínimo 8 caracteres, una mayúscula, un número y un carácter especial.
-        </div>
-
-        <button id="btn" onclick="handleReset()">Actualizar contraseña</button>
-        <div class="message" id="message"></div>
+      <input type="password" id="password" placeholder="Nueva contraseña" />
+      <input type="password" id="confirm" placeholder="Confirmar contraseña" />
+      <div class="hint">
+        Mínimo 8 caracteres, una mayúscula, un número y un carácter especial (!@#$%^&*)
       </div>
 
-      <div class="success-state" id="success-state">
-        <div class="icon">✅</div>
-        <div class="title">Contraseña actualizada</div>
-        <div class="subtitle">
-          Tu contraseña fue cambiada exitosamente. Ya podés iniciar sesión en la
-          app.
-        </div>
-      </div>
+      <button id="btn" onclick="handleReset()">Actualizar contraseña</button>
+      <div class="message" id="message"></div>
     </div>
 
-    <script>
-      const SUPABASE_URL = "https://moutwozdogxbntanciwa.supabase.co";
-      const SUPABASE_ANON_KEY =
-        "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1vdXR3b3pkb2d4Ym50YW5jaXdhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY5MDM5MTksImV4cCI6MjA5MjQ3OTkxOX0.z82HSBw_vyIjLQHlAiQfE6ompcTkaaEtOSOhvc8BpTc";
+    <div class="success-state" id="success-state">
+      <div class="icon">✅</div>
+      <div class="title">Contraseña actualizada</div>
+      <div class="subtitle">Tu contraseña fue cambiada exitosamente. Ya podés iniciar sesión en la app.</div>
+    </div>
+  </div>
 
-      const client = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
-        auth: {
-          flowType: "implicit",
-          detectSessionInUrl: true,
-          persistSession: true,
-        },
-      });
+  <script>
+    const SUPABASE_URL = 'https://moutwozdogxbntanciwa.supabase.co/rest/v1/'
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1vdXR3b3pkb2d4Ym50YW5jaXdhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY5MDM5MTksImV4cCI6MjA5MjQ3OTkxOX0.z82HSBw_vyIjLQHlAiQfE6ompcTkaaEtOSOhvc8BpTc'
 
-      // Escuchar eventos de autenticación
-      client.auth.onAuthStateChange((event, session) => {
-        if (event === "PASSWORD_RECOVERY" || session) {
-          document.getElementById("btn").disabled = false;
-          const msg = document.getElementById("message");
-          msg.style.display = "none";
-        }
-      });
+    const { createClient } = supabase
+    const client = createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
 
-      // Comprobar que la URL contiene el token
-      window.addEventListener("DOMContentLoaded", () => {
-        const hasAccessToken = window.location.hash.includes("access_token");
+    function validatePassword(password) {
+      if (password.length < 8) return 'Mínimo 8 caracteres'
+      if (!/[A-Z]/.test(password)) return 'Debe tener al menos una mayúscula'
+      if (!/[0-9]/.test(password)) return 'Debe tener al menos un número'
+      if (!/[!@#$%^&*]/.test(password)) return 'Debe tener al menos un carácter especial'
+      return null
+    }
 
-        if (!hasAccessToken) {
-          showMessage(
-            "Para recuperar tu contraseña, debés ingresar desde el enlace enviado a tu correo.",
-            "error"
-          );
-          document.getElementById("btn").disabled = true;
-        }
-      });
+    function showMessage(text, type) {
+      const el = document.getElementById('message')
+      el.textContent = text
+      el.className = `message ${type}`
+      el.style.display = 'block'
+    }
 
-      function validatePassword(password) {
-        if (password.length < 8) return "Mínimo 8 caracteres";
-        if (!/[A-Z]/.test(password)) return "Debe tener al menos una mayúscula";
-        if (!/[0-9]/.test(password)) return "Debe tener al menos un número";
-        if (!/[^a-zA-Z0-9]/.test(password))
-          return "Debe tener al menos un carácter especial";
-        return null;
+    async function handleReset() {
+      const password = document.getElementById('password').value
+      const confirm = document.getElementById('confirm').value
+      const btn = document.getElementById('btn')
+
+      if (!password || !confirm) { showMessage('Completá ambos campos', 'error'); return }
+      if (password !== confirm) { showMessage('Las contraseñas no coinciden', 'error'); return }
+
+      const error = validatePassword(password)
+      if (error) { showMessage(error, 'error'); return }
+
+      btn.disabled = true
+      btn.textContent = 'Actualizando...'
+
+      const { error: updateError } = await client.auth.updateUser({ password })
+
+      if (updateError) {
+        showMessage('No se pudo actualizar la contraseña. El link puede haber expirado.', 'error')
+        btn.disabled = false
+        btn.textContent = 'Actualizar contraseña'
+      } else {
+        document.getElementById('form-state').style.display = 'none'
+        document.getElementById('success-state').style.display = 'block'
       }
-
-      function showMessage(text, type) {
-        const el = document.getElementById("message");
-        el.textContent = text;
-        el.className = `message ${type}`;
-        el.style.display = "block";
-      }
-
-      async function handleReset() {
-        const password = document.getElementById("password").value;
-        const confirm = document.getElementById("confirm").value;
-        const btn = document.getElementById("btn");
-
-        if (!password || !confirm) {
-          showMessage("Completá ambos campos", "error");
-          return;
-        }
-        if (password !== confirm) {
-          showMessage("Las contraseñas no coinciden", "error");
-          return;
-        }
-
-        const error = validatePassword(password);
-        if (error) {
-          showMessage(error, "error");
-          return;
-        }
-
-        btn.disabled = true;
-        btn.textContent = "Actualizando...";
-
-        const { error: updateError } = await client.auth.updateUser({
-          password,
-        });
-
-        if (updateError) {
-          showMessage(
-            "No se pudo actualizar la contraseña. El enlace puede haber expirado o ya fue utilizado.",
-            "error"
-          );
-          btn.disabled = false;
-          btn.textContent = "Actualizar contraseña";
-        } else {
-          document.getElementById("form-state").style.display = "none";
-          document.getElementById("success-state").style.display = "block";
-        }
-      }
-    </script>
-  </body>
+    }
+  </script>
+</body>
 </html>
