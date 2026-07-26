@@ -164,7 +164,6 @@
       const SUPABASE_ANON_KEY =
         "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1vdXR3b3pkb2d4Ym50YW5jaXdhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY5MDM5MTksImV4cCI6MjA5MjQ3OTkxOX0.z82HSBw_vyIjLQHlAiQfE6ompcTkaaEtOSOhvc8BpTc";
 
-      // Forzar flujo 'implicit' para procesar los tokens de correo entre app y web
       const client = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
         auth: {
           flowType: "implicit",
@@ -173,12 +172,20 @@
         },
       });
 
-      // Validar si la URL fue abierta desde el enlace del correo
-      window.addEventListener("DOMContentLoaded", () => {
-        const hasHash = window.location.hash.includes("access_token");
-        const hasCode = window.location.search.includes("code");
+      // Escuchar eventos de autenticación
+      client.auth.onAuthStateChange((event, session) => {
+        if (event === "PASSWORD_RECOVERY" || session) {
+          document.getElementById("btn").disabled = false;
+          const msg = document.getElementById("message");
+          msg.style.display = "none";
+        }
+      });
 
-        if (!hasHash && !hasCode) {
+      // Comprobar que la URL contiene el token
+      window.addEventListener("DOMContentLoaded", () => {
+        const hasAccessToken = window.location.hash.includes("access_token");
+
+        if (!hasAccessToken) {
           showMessage(
             "Para recuperar tu contraseña, debés ingresar desde el enlace enviado a tu correo.",
             "error"
