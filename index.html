@@ -126,11 +126,32 @@
   </div>
 
   <script>
-    const SUPABASE_URL = 'https://moutwozdogxbntanciwa.supabase.co/rest/v1/'
-    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1vdXR3b3pkb2d4Ym50YW5jaXdhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY5MDM5MTksImV4cCI6MjA5MjQ3OTkxOX0.z82HSBw_vyIjLQHlAiQfE6ompcTkaaEtOSOhvc8BpTc'
+    const SUPABASE_URL = 'TU_SUPABASE_URL'
+    const SUPABASE_ANON_KEY = 'TU_SUPABASE_ANON_KEY'
 
     const { createClient } = supabase
     const client = createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
+
+    // Procesar el token del hash de la URL
+    async function init() {
+      const hash = window.location.hash
+      if (hash && hash.includes('access_token')) {
+        const params = new URLSearchParams(hash.substring(1))
+        const accessToken = params.get('access_token')
+        const refreshToken = params.get('refresh_token')
+        
+        if (accessToken && refreshToken) {
+          const { error } = await client.auth.setSession({
+            access_token: accessToken,
+            refresh_token: refreshToken,
+          })
+          if (error) {
+            showMessage('El link expiró o es inválido. Pedí uno nuevo.', 'error')
+            document.getElementById('btn').disabled = true
+          }
+        }
+      }
+    }
 
     function validatePassword(password) {
       if (password.length < 8) return 'Mínimo 8 caracteres'
@@ -164,7 +185,7 @@
       const { error: updateError } = await client.auth.updateUser({ password })
 
       if (updateError) {
-        showMessage('No se pudo actualizar la contraseña. El link puede haber expirado.', 'error')
+        showMessage('No se pudo actualizar. Pedí un nuevo link.', 'error')
         btn.disabled = false
         btn.textContent = 'Actualizar contraseña'
       } else {
@@ -172,6 +193,8 @@
         document.getElementById('success-state').style.display = 'block'
       }
     }
-  </script>
+
+    init()
+</script>
 </body>
 </html>
